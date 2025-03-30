@@ -79,6 +79,18 @@ def create_pdf(data, output_filename):
     elements = []
     styles = getSampleStyleSheet()
 
+    # Create a custom style for notes that preserves whitespace
+    notes_style = ParagraphStyle(
+        "Notes",
+        parent=styles["Normal"],
+        fontSize=10,
+        leading=12,  # Line spacing
+        spaceBefore=0,
+        spaceAfter=0,
+        preserveWhitespace=True,
+        alignment=0,  # Left alignment
+    )
+
     # Add title
     title_style = ParagraphStyle(
         "CustomTitle",
@@ -93,17 +105,25 @@ def create_pdf(data, output_filename):
     table_data = [["Date", "Day", "Hours", "Notes"]]
     # Only process rows up to the last data row (before totals)
     for _, row in df.iloc[: last_data_row + 1].iterrows():
+        # Convert notes to Paragraph for better wrapping
+        notes = (
+            row[headers[3]] if len(headers) > 3 and pd.notna(row[headers[3]]) else ""
+        )
+        # Replace newlines with <br/> tags for proper line breaks
+        notes = str(notes).replace("\n", "<br/>")
+        notes_paragraph = Paragraph(notes, notes_style)
         table_data.append(
             [
                 row[headers[0]],  # Date
                 row[headers[1]],  # Day
                 row[headers[2]],  # Hours
-                row[headers[3]] if len(headers) > 3 else "",  # Notes
+                notes_paragraph,  # Notes as Paragraph
             ]
         )
 
-    # Create table
-    table = Table(table_data)
+    # Create table with specific column widths
+    col_widths = [1.2 * inch, 0.5 * inch, 0.8 * inch, 4.5 * inch]  # Adjusted widths
+    table = Table(table_data, colWidths=col_widths)
     table.setStyle(
         TableStyle(
             [
@@ -121,6 +141,10 @@ def create_pdf(data, output_filename):
                 ("WORDWRAP", (0, 0), (-1, -1), True),
                 ("LEFTPADDING", (0, 0), (-1, -1), 6),  # Added left padding
                 ("RIGHTPADDING", (0, 0), (-1, -1), 6),  # Added right padding
+                ("TOPPADDING", (0, 0), (-1, -1), 4),  # Added top padding
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),  # Added bottom padding
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),  # Align content to top
+                ("SPAN", (0, 0), (-1, 0)),  # Make header row span all columns
             ]
         )
     )
