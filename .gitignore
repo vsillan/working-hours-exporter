@@ -28,4 +28,7 @@ token.pickle
 
 # OS specific files
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Configuration files
+config.json 

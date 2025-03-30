@@ -12,12 +12,45 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import pickle
 from datetime import datetime
+import json
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
     "https://www.googleapis.com/auth/drive.file",
 ]
+
+
+def load_config():
+    """Load configuration from config.json file."""
+    config_path = "config.json"
+    if not os.path.exists(config_path):
+        print(f"Error: {config_path} not found!")
+        print(
+            "Please copy config.template.json to config.json and fill in your values."
+        )
+        exit(1)
+
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
+            required_fields = [
+                "spreadsheet_id",
+                "range_name",
+                "output_pdf",
+                "drive_folder_id",
+            ]
+            for field in required_fields:
+                if field not in config:
+                    print(f"Error: Missing required field '{field}' in config.json")
+                    exit(1)
+            return config
+    except json.JSONDecodeError:
+        print("Error: config.json is not valid JSON")
+        exit(1)
+    except Exception as e:
+        print(f"Error reading config.json: {str(e)}")
+        exit(1)
 
 
 def get_google_credentials():
@@ -200,17 +233,12 @@ def upload_to_drive(file_path, folder_id=None):
 
 
 def main():
-    # Replace these with your actual values
-    SPREADSHEET_ID = "1YH-O4aFr3ii2_mZ5hLDKBqh1uBFMBGdhbhilIkaLByo"
-    RANGE_NAME = "3/2025!A1:Z1000"  # Adjust range as needed
-    OUTPUT_PDF = "working_hours.pdf"
-    DRIVE_FOLDER_ID = (
-        "1-evAZRTSLtFDepZSGd88mPsnpb_nHN-b"  # Optional: ID of the folder to upload to
-    )
+    # Load configuration
+    config = load_config()
 
     # Get data from Google Sheets
     print("Fetching data from Google Sheets...")
-    data = get_sheet_data(SPREADSHEET_ID, RANGE_NAME)
+    data = get_sheet_data(config["spreadsheet_id"], config["range_name"])
 
     if not data:
         print("No data found in the specified range.")
@@ -218,11 +246,11 @@ def main():
 
     # Create PDF
     print("Generating PDF...")
-    create_pdf(data, OUTPUT_PDF)
+    create_pdf(data, config["output_pdf"])
 
     # Upload to Google Drive
     print("Uploading to Google Drive...")
-    file_id = upload_to_drive(OUTPUT_PDF, DRIVE_FOLDER_ID)
+    file_id = upload_to_drive(config["output_pdf"], config["drive_folder_id"])
     print(f"File uploaded successfully! File ID: {file_id}")
 
 
