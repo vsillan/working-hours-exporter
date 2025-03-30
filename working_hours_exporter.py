@@ -44,6 +44,16 @@ def load_config():
                 if field not in config:
                     print(f"Error: Missing required field '{field}' in config.json")
                     exit(1)
+
+            # Get downloads folder path
+            if os.name == "nt":  # Windows
+                downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+            else:  # macOS and Linux
+                downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+
+            # Update output_pdf path to be in downloads folder
+            config["output_pdf"] = os.path.join(downloads_path, config["output_pdf"])
+
             return config
     except json.JSONDecodeError:
         print("Error: config.json is not valid JSON")
