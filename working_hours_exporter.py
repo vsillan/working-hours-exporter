@@ -36,7 +36,7 @@ def load_config():
             config = json.load(f)
             required_fields = [
                 "spreadsheet_id",
-                "range_name",
+                "sheet_name",
                 "output_pdf",
                 "drive_folder_id",
             ]
@@ -236,9 +236,12 @@ def main():
     # Load configuration
     config = load_config()
 
+    # Construct the range name from sheet name and hardcoded range
+    range_name = f"{config['sheet_name']}!A1:Z1000"
+
     # Get data from Google Sheets
     print("Fetching data from Google Sheets...")
-    data = get_sheet_data(config["spreadsheet_id"], config["range_name"])
+    data = get_sheet_data(config["spreadsheet_id"], range_name)
 
     if not data:
         print("No data found in the specified range.")
