@@ -63,6 +63,12 @@ def create_pdf(data, output_filename):
     # Get the first column name (date column)
     date_column = headers[0]
 
+    # Find the row index of "Invoiceable total"
+    invoiceable_total_index = df[df[date_column] == "Invoiceable total"].index[0]
+
+    # Filter out rows after "Invoiceable total"
+    df = df.iloc[: invoiceable_total_index + 1]
+
     # Find the last non-empty row before the totals
     last_data_row = df[
         df[date_column].notna()
