@@ -81,7 +81,11 @@ def create_pdf(data, output_filename):
 
     # Add title
     title_style = ParagraphStyle(
-        "CustomTitle", parent=styles["Heading1"], fontSize=16, spaceAfter=30
+        "CustomTitle",
+        parent=styles["Heading1"],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=0,  # Left alignment
     )
     elements.append(Paragraph(f"Working Hours Report - {data[0][0]}", title_style))
 
@@ -105,7 +109,7 @@ def create_pdf(data, output_filename):
             [
                 ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),  # Changed to LEFT alignment
                 ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                 ("FONTSIZE", (0, 0), (-1, 0), 12),
                 ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
@@ -113,9 +117,10 @@ def create_pdf(data, output_filename):
                 ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
                 ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
                 ("FONTSIZE", (0, 1), (-1, -1), 10),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("GRID", (0, 0), (-1, -1), 1, colors.black),
                 ("WORDWRAP", (0, 0), (-1, -1), True),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),  # Added left padding
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),  # Added right padding
             ]
         )
     )
@@ -125,7 +130,11 @@ def create_pdf(data, output_filename):
 
     # Add totals
     total_style = ParagraphStyle(
-        "Total", parent=styles["Normal"], fontSize=12, spaceAfter=10
+        "Total",
+        parent=styles["Normal"],
+        fontSize=12,
+        spaceAfter=10,
+        alignment=0,  # Left alignment
     )
     elements.append(
         Paragraph(f"Total Hours: {total_hours_row[headers[2]]}", total_style)
