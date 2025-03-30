@@ -83,15 +83,13 @@ def get_sheet_data(spreadsheet_id, range_name):
     return result.get("values", [])
 
 
-def create_pdf(data, output_filename):
+def create_pdf(data, output_filename, sheet_name):
     """Create a PDF from the sheet data."""
-    # Convert data to pandas DataFrame
-    # Ensure we have all column names, even if some are empty
-    headers = data[0]
-    while len(headers) < 4:  # We need at least 4 columns (A, B, C, D)
-        headers.append(f"Column_{len(headers)}")
+    # Define column names
+    headers = ["Date", "Day", "Hours", "Notes"]
 
-    df = pd.DataFrame(data[1:], columns=headers)
+    # Create DataFrame with predefined headers
+    df = pd.DataFrame(data, columns=headers)
 
     # Get the first column name (date column)
     date_column = headers[0]
@@ -138,24 +136,22 @@ def create_pdf(data, output_filename):
         spaceAfter=30,
         alignment=0,  # Left alignment
     )
-    elements.append(Paragraph(f"Working Hours Report - {data[0][0]}", title_style))
+    elements.append(Paragraph(f"Working hours report – {sheet_name}", title_style))
 
     # Create table with daily entries
     table_data = [["Date", "Day", "Hours", "Notes"]]
     # Only process rows up to the last data row (before totals)
     for _, row in df.iloc[: last_data_row + 1].iterrows():
         # Convert notes to Paragraph for better wrapping
-        notes = (
-            row[headers[3]] if len(headers) > 3 and pd.notna(row[headers[3]]) else ""
-        )
+        notes = row["Notes"] if pd.notna(row["Notes"]) else ""
         # Replace newlines with <br/> tags for proper line breaks
         notes = str(notes).replace("\n", "<br/>")
         notes_paragraph = Paragraph(notes, notes_style)
         table_data.append(
             [
-                row[headers[0]],  # Date
-                row[headers[1]],  # Day
-                row[headers[2]],  # Hours
+                row["Date"],  # Date
+                row["Day"],  # Day
+                row["Hours"],  # Hours
                 notes_paragraph,  # Notes as Paragraph
             ]
         )
@@ -204,7 +200,7 @@ def create_pdf(data, output_filename):
     )
     elements.append(
         Paragraph(
-            f"Invoiceable Total: €{invoiceable_total_row[headers[2]]}", total_style
+            f"Invoiceable Total: {invoiceable_total_row[headers[2]]}€", total_style
         )
     )
 
@@ -249,7 +245,7 @@ def main():
 
     # Create PDF
     print("Generating PDF...")
-    create_pdf(data, config["output_pdf"])
+    create_pdf(data, config["output_pdf"], config["sheet_name"])
 
     # Upload to Google Drive
     print("Uploading to Google Drive...")
